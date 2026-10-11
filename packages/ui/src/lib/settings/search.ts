@@ -183,6 +183,21 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     isAvailable: (ctx) => !ctx.isMobile && !ctx.isVSCode,
   },
   {
+    id: 'appearance.file-tree-side',
+    page: 'general',
+    titleKey: 'settings.openchamber.visual.field.fileTreeSide',
+    keywords: ['files', 'tree', 'explorer', 'left', 'right', 'side', 'editor'],
+    isAvailable: (ctx) => !ctx.isMobile && !ctx.isVSCode,
+  },
+  {
+    id: 'appearance.layout-animations',
+    page: 'general',
+    titleKey: 'settings.openchamber.visual.field.layoutAnimations',
+    descriptionKey: 'settings.openchamber.visual.field.layoutAnimationsInfo',
+    keywords: ['animation', 'motion', 'sidebar', 'panel', 'slide', 'instant'],
+    isAvailable: (ctx) => !ctx.isMobile && !ctx.isVSCode,
+  },
+  {
     id: 'appearance.file-editor-keymap',
     page: 'general',
     titleKey: 'settings.openchamber.visual.field.fileEditorKeymap',
@@ -728,6 +743,15 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     descriptionKey: 'settings.openchamber.tools.field.agentControlToolInfo',
     keywords: ['agent', 'tool', 'orchestration', 'openchamber', 'sessions', 'schedule', 'control'],
     isAvailable: (ctx) => !ctx.isVSCode,
+  },
+  {
+    id: 'sessions.agent-worktree-move',
+    page: 'general',
+    titleKey: 'settings.openchamber.tools.field.agentWorktreeMove',
+    descriptionKey: 'settings.openchamber.tools.field.agentWorktreeMoveInfo',
+    keywords: ['agent', 'worktree', 'branch', 'move', 'session', 'ask', 'pull request'],
+    // Rendered only under a switched-on control tool.
+    isAvailable: (ctx) => !ctx.isVSCode && useUIStore.getState().agentControlToolEnabled,
   },
   {
     id: 'sessions.agent-web-tool',
