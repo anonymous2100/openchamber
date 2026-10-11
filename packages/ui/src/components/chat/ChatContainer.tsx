@@ -99,6 +99,7 @@ import { eventMatchesShortcut, getEffectiveShortcutCombo } from '@/lib/shortcuts
 import { ChatSearchBar } from './search/ChatSearchBar';
 import { WorkStatusPanel } from './work-status/WorkStatusPanel';
 import { useWorkStatusVisibility } from './work-status/useWorkStatusVisibility';
+import { useShownSessionSelection } from './useShownSessionSelection';
 import { useRightSlotStore } from '@/components/layout/rightSlot';
 import { normalizeUserDisplayParts } from './message/normalizeUserDisplayParts';
 import { resolveChatPromptReadOnly } from './chatPromptReadOnly';
@@ -648,7 +649,7 @@ const ReadOnlyPromptBanner: React.FC<{ text: string; onStop?: () => void; stopLa
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="-my-1.5 -mr-2 shrink-0 text-[var(--status-error)] hover:text-[var(--status-error)]"
+                        className="-my-1.5 -me-2 shrink-0 text-[var(--status-error)] hover:text-[var(--status-error)]"
                         onClick={onStop}
                         aria-label={stopLabel}
                         title={stopLabel}
@@ -792,7 +793,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         waitedSessionIdRef.current = liveSessionId && !liveSessionRenderable ? liveSessionId : null;
     }
     const targetSelection = holdPreviousTimeline ? shownSelectionRef.current : liveSelection;
-    const { sessionId: currentSessionId, directory: currentSessionDirectory } = React.useDeferredValue(targetSelection);
+    const { sessionId: currentSessionId, directory: currentSessionDirectory } = useShownSessionSelection(targetSelection);
     shownSelectionRef.current = { sessionId: currentSessionId, directory: currentSessionDirectory };
     const revealWaited = Boolean(currentSessionId) && currentSessionId === waitedSessionIdRef.current;
 
@@ -1112,7 +1113,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             variant="outline"
             size="xs"
             onClick={handleReturnToParentSession}
-            className="absolute left-3 top-3 z-20 !font-normal bg-[var(--surface-background)]/95"
+            className="absolute inset-s-3 top-3 z-20 !font-normal bg-[var(--surface-background)]/95"
             aria-label={t('chat.container.returnToParent.aria')}
             title={parentSession.title?.trim()
                 ? t('chat.container.returnToParent.titleNamed', { title: parentSession.title })
@@ -1124,11 +1125,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     ) : null;
     // A chat of a deleted isolated space is on the Archive page and read-only; the server refuses
     // to run it whatever the screen shows. Its directory is the archive's own, and the list of
-    // archives is read once per runtime.
+    // archives is read once per runtime. A draft opened after such a chat still sits in the
+    // archive's directory until it is sent, and is not read-only: it is a new chat.
     React.useEffect(() => {
         ensureSpaceArchives();
     }, []);
-    const spaceArchive = useSpaceArchiveOf(effectiveSessionDirectory);
+    const spaceArchive = useSpaceArchiveOf(currentSessionId ? effectiveSessionDirectory : null);
     const promptReadOnly = spaceArchive !== null || resolveChatPromptReadOnly(
         currentSession,
         allowPromptingSubagentSessions,
@@ -1825,7 +1827,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 			{returnToParentButton}
 			{sessionSurface}
 			{chatSearch.open && currentSessionId && messageSearchEnabled ? (
-				<div className="pointer-events-none absolute right-3 top-2 z-20">
+				<div className="pointer-events-none absolute inset-e-3 top-2 z-20">
 					<ChatSearchBar
 						sessionId={currentSessionId}
 						scrollNode={scrollNode}
