@@ -11,7 +11,7 @@ afterEach(async () => {
   await Promise.all(temporaryDirectories.splice(0).map((directory) => fs.rm(directory, { recursive: true, force: true })));
 });
 
-const createHarness = async ({ settings = {}, env = {}, memoryAvailable = true } = {}) => {
+const createHarness = async ({ settings = {}, env = {}, memoryAvailable = true, workbuddyRuntime = null, enterpriseMode = false } = {}) => {
   const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openchamber-managed-config-'));
   temporaryDirectories.push(dataDir);
   const agentToolRuntime = {
@@ -33,6 +33,8 @@ const createHarness = async ({ settings = {}, env = {}, memoryAvailable = true }
     dataDir,
     env,
     agentToolRuntime,
+    workbuddyRuntime,
+    isEnterpriseMode: () => enterpriseMode,
     readSettings: () => current.settings,
     isAgentMemoryAvailable: () => memoryAvailable,
   });
@@ -210,5 +212,35 @@ describe('managed OpenCode config file', () => {
 
     expect(agentToolRuntime.materializePlugin).not.toHaveBeenCalled();
     expect(await readConfigFile()).toEqual({ plugins: ['-opencode.browser'] });
+  });
+
+  it('names the WorkBuddy provider plugin alongside the managed tools', async () => {
+    const workbuddyRuntime = {
+      pluginDirectory: '/data/workbuddy-plugin/workbuddy-cn',
+      materializePlugin: vi.fn(async () => '/data/workbuddy-plugin/workbuddy-cn'),
+    };
+    const { dataDir, runtime, readConfigFile } = await createHarness({ workbuddyRuntime });
+
+    await runtime.buildManagedChildEnv();
+
+    expect(workbuddyRuntime.materializePlugin).toHaveBeenCalledTimes(1);
+    expect(await readConfigFile()).toEqual({
+      plugins: ['-opencode.browser', path.join(dataDir, 'agent-tool', 'openchamber-agent-tool'), '/data/workbuddy-plugin/workbuddy-cn'],
+    });
+  });
+
+  it('leaves the WorkBuddy provider plugin out under enterprise mode', async () => {
+    const workbuddyRuntime = {
+      pluginDirectory: '/data/workbuddy-plugin/workbuddy-cn',
+      materializePlugin: vi.fn(async () => '/data/workbuddy-plugin/workbuddy-cn'),
+    };
+    const { dataDir, runtime, readConfigFile } = await createHarness({ workbuddyRuntime, enterpriseMode: true });
+
+    await runtime.buildManagedChildEnv();
+
+    expect(workbuddyRuntime.materializePlugin).not.toHaveBeenCalled();
+    expect(await readConfigFile()).toEqual({
+      plugins: ['-opencode.browser', path.join(dataDir, 'agent-tool', 'openchamber-agent-tool')],
+    });
   });
 });

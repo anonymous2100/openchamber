@@ -39,6 +39,10 @@ const DISABLED_BUILTIN_PLUGINS = ['-opencode.browser'];
  * @param {string} dependencies.dataDir OpenChamber data directory
  * @param {NodeJS.ProcessEnv} [dependencies.env] environment the managed child inherits
  * @param {object|null} [dependencies.agentToolRuntime]
+ * @param {object|null} [dependencies.workbuddyRuntime] materializes the WorkBuddy
+ *   CN provider plugin; skipped under enterprise mode, where a model provider
+ *   may only come from OpenCode's own config
+ * @param {() => boolean} [dependencies.isEnterpriseMode]
  * @param {() => Promise<object|null>} dependencies.readSettings
  * @param {() => boolean} dependencies.isAgentMemoryAvailable
  */
@@ -48,6 +52,8 @@ export const createManagedConfigRuntime = ({
   dataDir,
   env = process.env,
   agentToolRuntime = null,
+  workbuddyRuntime = null,
+  isEnterpriseMode = () => false,
   readSettings,
   isAgentMemoryAvailable,
 }) => {
@@ -89,6 +95,11 @@ export const createManagedConfigRuntime = ({
     const directories = [];
     if (agentToolRuntime && (includeControl || includeWeb || includeMemory || includeKnowledge || includeNotify || includeRender)) {
       directories.push(await agentToolRuntime.materializePlugin({ includeControl, includeWeb, includeMemory, includeKnowledge, includeNotify, includeRender, codeMode }));
+    }
+    // The WorkBuddy provider is a model-provider entry: under enterprise mode
+    // OpenCode's own config is the only source, so the plugin is not injected.
+    if (workbuddyRuntime && !isEnterpriseMode()) {
+      directories.push(await workbuddyRuntime.materializePlugin());
     }
     return directories;
   };

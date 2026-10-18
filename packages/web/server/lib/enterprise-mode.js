@@ -35,6 +35,9 @@ import { z } from 'zod';
  *   policy is the real lock; this closes the way in through the app.
  *   Signing in to a remote MCP server from the OpenCode config uses the same
  *   routes and stays allowed.
+ * - The WorkBuddy provider plugin is never injected into the managed
+ *   OpenCode — it is itself a model-provider entry
+ *   (`workbuddy/runtime.js` via `opencode/managed-config-file.js`).
  * - Jev classification is off, unless the administrator pinned their own
  *   endpoint (`routing/runtime.js`).
  * - External tunnels are refused: their provider sees plain text (`tunnels`).

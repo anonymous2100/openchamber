@@ -146,6 +146,7 @@ import { createRelayService, relayBlockedByEnterprise } from './lib/relay/servic
 import { createRelayHostLock } from './lib/relay/host-lock.js';
 import { createRelayKeyStore } from './lib/relay/key-store.js';
 import { createAgentToolRuntime } from './lib/agent-tool/runtime.js';
+import { createWorkBuddyRuntime } from './lib/workbuddy/runtime.js';
 import { createBrowserControlBroker } from './lib/browser-control/broker.js';
 import { createBrowserControlRouter } from './lib/browser-control/provider.js';
 import { createDevServerScanner } from './lib/dev-servers/routes.js';
@@ -2009,6 +2010,8 @@ async function main(options = {}) {
     dataDir: OPENCHAMBER_DATA_DIR,
     env: process.env,
     agentToolRuntime,
+    workbuddyRuntime: createWorkBuddyRuntime({ fsPromises, path, dataDir: OPENCHAMBER_DATA_DIR }),
+    isEnterpriseMode: () => isEnterpriseMode(),
     readSettings: () => readSettingsFromDiskMigrated(),
     isAgentMemoryAvailable: isAgentMemoryFeatureAvailable,
   });
